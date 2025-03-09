@@ -69,7 +69,12 @@
       height: 2em;
     }
 
-    /* Neustart-Button */
+    /* Neustart- und Schließen-Buttons */
+    .controls {
+      margin-top: 30px;
+      display: flex;
+      gap: 20px;
+    }
     .reset {
       padding: 16px 32px;
       font-size: 1.5em;
@@ -80,7 +85,6 @@
       border-radius: 10px;
       box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
       transition: background 0.3s;
-      margin-top: 30px;
     }
     .reset:hover {
       background-color: #ecf0f1;
@@ -106,6 +110,21 @@
       text-align: center;
       color: #2c3e50;
       box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    }
+    /* Größere Schrift im Popup */
+    .modal-content h2 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+    .modal-content p {
+      font-size: 1.5em;
+      margin-bottom: 20px;
+    }
+    /* Kleinere Buttons im Popup */
+    .modal-content .reset {
+      padding: 10px 20px;
+      font-size: 1.2em;
+      margin: 5px;
     }
     .hidden {
       display: none;
@@ -153,7 +172,11 @@
     <div class="answers" id="answers"></div>
     <div class="message" id="message"></div>
   </div>
-  <button class="reset" id="resetBtn">🔄 Neustart</button>
+
+  <div class="controls">
+    <button class="reset" id="resetBtn">🔄 Neustart</button>
+    <button class="reset" id="closeBtn">❌ Schließen</button>
+  </div>
 
   <!-- Modal bei falscher Antwort -->
   <div id="defeatModal" class="modal-overlay hidden">
@@ -161,6 +184,7 @@
       <h2>Falsch!</h2>
       <p>Versuche es noch einmal.</p>
       <button id="modalRestartBtn" class="reset">🔄 Neustart</button>
+      <button id="modalCloseBtn" class="reset">❌ Schließen</button>
     </div>
   </div>
 
@@ -300,8 +324,10 @@
     const answersEl = document.getElementById("answers");
     const messageEl = document.getElementById("message");
     const resetBtn = document.getElementById("resetBtn");
+    const closeBtn = document.getElementById("closeBtn");
     const defeatModal = document.getElementById("defeatModal");
     const modalRestartBtn = document.getElementById("modalRestartBtn");
+    const modalCloseBtn = document.getElementById("modalCloseBtn");
 
     // Zeigt die aktuelle Frage samt Antwortmöglichkeiten an
     function displayQuestion() {
@@ -360,6 +386,12 @@
       displayQuestion();
     }
 
+    // Versucht, die Seite zu schließen. Falls das nicht funktioniert, wird auf about:blank umgeleitet.
+    function closePage() {
+      window.open('', '_self').close();
+      window.location.href = "about:blank";
+    }
+
     // Feuerwerks-Animation (wie im Tic-Tac-Toe)
     function startFireworks() {
       if (fireworksInterval) return;
@@ -396,7 +428,10 @@
     }
 
     resetBtn.addEventListener("click", resetQuiz);
+    closeBtn.addEventListener("click", closePage);
     modalRestartBtn.addEventListener("click", resetQuiz);
+    modalCloseBtn.addEventListener("click", closePage);
+
     document.addEventListener("DOMContentLoaded", () => {
       questions = generateQuestions();
       displayQuestion();
