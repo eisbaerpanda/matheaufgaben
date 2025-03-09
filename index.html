@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mathe-Aufgaben</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
+
+    /* Grundlayout: kinderfreundliches Pastell-Blau und Comic-Schrift */
+    body {
+      font-family: 'Comic Neue', cursive;
+      text-align: center;
+      background-color: #a8d0e6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      margin: 0;
+      padding-top: 10vh;
+      overflow: hidden;
+      color: #2c3e50;
+    }
+
+    /* Container für den Quiz-Inhalt */
+    .quiz-container {
+      background: transparent;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Frageanzeige */
+    .question {
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+
+    /* Container für Antwortmöglichkeiten */
+    .answers {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    /* Stil der Antwort-Buttons – ähnlich wie die Tic-Tac-Toe-Zellen */
+    .answer-button {
+      padding: 15px 30px;
+      font-size: 1.5em;
+      background-color: white;
+      color: #2c3e50;
+      border: 4px solid #34495e;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+      width: 300px;
+      outline: none;
+    }
+    .answer-button:hover {
+      background-color: #f7f7f7;
+    }
+
+    /* Platz für Rückmeldungen */
+    .message {
+      font-size: 2em;
+      margin-top: 20px;
+      height: 2em;
+    }
+
+    /* Neustart-Button */
+    .reset {
+      padding: 16px 32px;
+      font-size: 1.5em;
+      cursor: pointer;
+      background-color: white;
+      color: #2c3e50;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+      transition: background 0.3s;
+      margin-top: 30px;
+    }
+    .reset:hover {
+      background-color: #ecf0f1;
+    }
+
+    /* Modal-Styling für falsche Antworten */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      color: #2c3e50;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    }
+    .hidden {
+      display: none;
+    }
+
+    /* Feuerwerks-Animation (wie im Tic-Tac-Toe) */
+    @keyframes firework {
+      0% {
+        transform: translate(0, 0) scale(0);
+        opacity: 1;
+      }
+      50% {
+        transform: translate(var(--dx), calc(-1 * var(--dyPeak))) scale(1.5);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(var(--dx), var(--dyFall)) scale(1);
+        opacity: 0;
+      }
+    }
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      pointer-events: none;
+    }
+
+    /* Shake-Effekt für falsche Antworten */
+    @keyframes shake {
+      0% { transform: translate(0, 0); }
+      20% { transform: translate(-10px, 0); }
+      40% { transform: translate(10px, 0); }
+      60% { transform: translate(-10px, 0); }
+      80% { transform: translate(10px, 0); }
+      100% { transform: translate(0, 0); }
+    }
+    .shake {
+      animation: shake 0.8s;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <div class="question" id="question">Frage wird geladen...</div>
+    <div class="answers" id="answers"></div>
+    <div class="message" id="message"></div>
+  </div>
+  <button class="reset" id="resetBtn">🔄 Neustart</button>
+
+  <!-- Modal bei falscher Antwort -->
+  <div id="defeatModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h2>Falsch!</h2>
+      <p>Versuche es noch einmal.</p>
+      <button id="modalRestartBtn" class="reset">🔄 Neustart</button>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+
+    /* Globale Variablen, um zu verhindern, dass dieselbe Frage zweimal hintereinander erscheint */
+    let lastAdditionQuestion = "";
+    let lastSubtractionQuestion = "";
+    let lastMultiplicationQuestion = "";
+    let lastDivisionQuestion = "";
+
+    /* --- Dynamische Aufgaben-Generatoren --- */
+
+    function generateAdditionQuestion() {
+      // Addition: etwas schwerer – Zahlen zwischen 10 und 50
+      let a, b, questionText, correctAnswer;
+      do {
+        a = Math.floor(Math.random() * 41) + 10; // 10 bis 50
+        b = Math.floor(Math.random() * 41) + 10;
+        questionText = `Was ist ${a} + ${b}?`;
+      } while (questionText === lastAdditionQuestion);
+      lastAdditionQuestion = questionText;
+      correctAnswer = a + b;
+      let wrongAnswers = generateWrongAnswers(correctAnswer);
+      let answers = shuffleArray([correctAnswer, ...wrongAnswers]);
+      let correctIndex = answers.indexOf(correctAnswer);
+      return {
+        question: questionText,
+        answers: answers.map(ans => ans.toString()),
+        correct: correctIndex
+      };
+    }
+
+    function generateSubtractionQuestion() {
+      // Subtraktion: etwas schwerer – a zwischen 20 und 99, b zwischen 10 und a
+      let a, b, questionText, correctAnswer;
+      do {
+        a = Math.floor(Math.random() * 80) + 20; // 20 bis 99
+        b = Math.floor(Math.random() * (a - 9)) + 10; // mindestens 10, kleiner als a
+        questionText = `Was ist ${a} - ${b}?`;
+      } while (questionText === lastSubtractionQuestion);
+      lastSubtractionQuestion = questionText;
+      correctAnswer = a - b;
+      let wrongAnswers = generateWrongAnswers(correctAnswer);
+      let answers = shuffleArray([correctAnswer, ...wrongAnswers]);
+      let correctIndex = answers.indexOf(correctAnswer);
+      return {
+        question: questionText,
+        answers: answers.map(ans => ans.toString()),
+        correct: correctIndex
+      };
+    }
+
+    function generateMultiplicationQuestion() {
+      // Multiplikation: Zahlen zwischen 2 und 9
+      let a, b, questionText, correctAnswer;
+      do {
+        a = Math.floor(Math.random() * 8) + 2; // 2 bis 9
+        b = Math.floor(Math.random() * 8) + 2;
+        questionText = `Was ist ${a} × ${b}?`;
+      } while (questionText === lastMultiplicationQuestion);
+      lastMultiplicationQuestion = questionText;
+      correctAnswer = a * b;
+      let wrongAnswers = generateWrongAnswers(correctAnswer);
+      let answers = shuffleArray([correctAnswer, ...wrongAnswers]);
+      let correctIndex = answers.indexOf(correctAnswer);
+      return {
+        question: questionText,
+        answers: answers.map(ans => ans.toString()),
+        correct: correctIndex
+      };
+    }
+
+    function generateDivisionQuestion() {
+      // Division: Divisor zwischen 2 und 9, Quotient zwischen 2 und 9, Dividend = Divisor * Quotient
+      let divisor, quotient, dividend, questionText, correctAnswer;
+      do {
+        divisor = Math.floor(Math.random() * 8) + 2;
+        quotient = Math.floor(Math.random() * 8) + 2;
+        dividend = divisor * quotient;
+        questionText = `Was ist ${dividend} ÷ ${divisor}?`;
+      } while (questionText === lastDivisionQuestion);
+      lastDivisionQuestion = questionText;
+      correctAnswer = quotient;
+      let wrongAnswers = generateWrongAnswers(correctAnswer);
+      let answers = shuffleArray([correctAnswer, ...wrongAnswers]);
+      let correctIndex = answers.indexOf(correctAnswer);
+      return {
+        question: questionText,
+        answers: answers.map(ans => ans.toString()),
+        correct: correctIndex
+      };
+    }
+
+    // Hilfsfunktion: Generiere zwei falsche Antworten in der Nähe des richtigen Werts
+    function generateWrongAnswers(correct) {
+      let wrong = new Set();
+      while (wrong.size < 2) {
+        let offset = Math.floor(Math.random() * 5) - 2; // Werte zwischen -2 und +2
+        if (offset === 0) continue;
+        let candidate = correct + offset;
+        if (candidate !== correct && candidate > 0) {
+          wrong.add(candidate);
+        }
+      }
+      return Array.from(wrong);
+    }
+
+    // Hilfsfunktion: Array mischen
+    function shuffleArray(array) {
+      let arr = array.slice();
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // Erstelle das Array mit den 4 Aufgaben
+    function generateQuestions() {
+      return [
+        generateAdditionQuestion(),
+        generateSubtractionQuestion(),
+        generateMultiplicationQuestion(),
+        generateDivisionQuestion()
+      ];
+    }
+
+    /* --- Quiz-Logik --- */
+
+    let questions = [];
+    let currentQuestion = 0;
+    let fireworksInterval = null;
+
+    const questionEl = document.getElementById("question");
+    const answersEl = document.getElementById("answers");
+    const messageEl = document.getElementById("message");
+    const resetBtn = document.getElementById("resetBtn");
+    const defeatModal = document.getElementById("defeatModal");
+    const modalRestartBtn = document.getElementById("modalRestartBtn");
+
+    // Zeigt die aktuelle Frage samt Antwortmöglichkeiten an
+    function displayQuestion() {
+      if (currentQuestion >= questions.length) {
+        questionEl.innerText = "Herzlichen Glückwunsch, du hast alle Aufgaben gelöst!";
+        answersEl.innerHTML = "";
+        messageEl.innerText = "";
+        startFireworks();
+        return;
+      }
+      const q = questions[currentQuestion];
+      questionEl.innerText = q.question;
+      answersEl.innerHTML = "";
+      messageEl.innerText = "";
+      q.answers.forEach((answer, index) => {
+        const btn = document.createElement("button");
+        btn.classList.add("answer-button");
+        btn.innerText = answer;
+        btn.addEventListener("click", () => handleAnswer(index));
+        answersEl.appendChild(btn);
+      });
+    }
+
+    // Überprüft, ob die Antwort korrekt war
+    function handleAnswer(selectedIndex) {
+      const q = questions[currentQuestion];
+      if (selectedIndex === q.correct) {
+        messageEl.innerText = "Richtig!";
+        setTimeout(() => {
+          currentQuestion++;
+          displayQuestion();
+        }, 1000);
+      } else {
+        document.querySelector(".quiz-container").classList.add("shake");
+        setTimeout(() => {
+          document.querySelector(".quiz-container").classList.remove("shake");
+          showDefeatModal();
+        }, 800);
+      }
+    }
+
+    function showDefeatModal() {
+      defeatModal.classList.remove("hidden");
+    }
+
+    function hideDefeatModal() {
+      defeatModal.classList.add("hidden");
+    }
+
+    function resetQuiz() {
+      stopFireworks();
+      document.querySelectorAll(".confetti").forEach(el => el.remove());
+      hideDefeatModal();
+      currentQuestion = 0;
+      questions = generateQuestions();
+      displayQuestion();
+    }
+
+    // Feuerwerks-Animation (wie im Tic-Tac-Toe)
+    function startFireworks() {
+      if (fireworksInterval) return;
+      triggerFireworkBurst();
+      fireworksInterval = setInterval(triggerFireworkBurst, 800);
+    }
+    function stopFireworks() {
+      if (fireworksInterval) {
+        clearInterval(fireworksInterval);
+        fireworksInterval = null;
+      }
+    }
+    function triggerFireworkBurst() {
+      const explosionX = Math.random() * 100;
+      const explosionY = Math.random() * 100;
+      const numPieces = 20;
+      for (let i = 0; i < numPieces; i++) {
+        const confetti = document.createElement("div");
+        confetti.classList.add("confetti");
+        confetti.style.left = explosionX + "vw";
+        confetti.style.top = explosionY + "vh";
+        confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        const dx = (Math.random() * 300 - 150) + "px";
+        confetti.style.setProperty("--dx", dx);
+        const dyPeak = Math.random() * 100 + 100;
+        confetti.style.setProperty("--dyPeak", dyPeak + "px");
+        const dyFall = Math.random() * 200 + 200;
+        confetti.style.setProperty("--dyFall", dyFall + "px");
+        const delay = Math.random() * 0.5;
+        confetti.style.animation = `firework 3s ease-out ${delay}s forwards`;
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), (3 + delay) * 1000);
+      }
+    }
+
+    resetBtn.addEventListener("click", resetQuiz);
+    modalRestartBtn.addEventListener("click", resetQuiz);
+    document.addEventListener("DOMContentLoaded", () => {
+      questions = generateQuestions();
+      displayQuestion();
+    });
+  </script>
+</body>
+</html>
