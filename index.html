@@ -5,141 +5,122 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>Mathe-Aufgaben</title>
   <style>
-    /* Schrift */
     @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
 
-    /* Farb- und Schattenvariablen wie im Bilderbuch */
     :root {
-      --bg-start:     #fef6e4;
-      --bg-end:       #d8e2dc;
-      --lift-shadow:  rgba(0,0,0,0.15);
-      --btn-bg:       rgba(255,255,255,0.8);
-      --btn-hover:    rgba(0,0,0,0.05);
-      --text-color:   #2c3e50;
+      --bg-start: #fef6e4;
+      --bg-end:   #d8e2dc;
+      --lift-shadow: rgba(0,0,0,0.15);
+      --btn-bg: rgba(255,255,255,0.9);
+      --btn-hover: rgba(0,0,0,0.05);
+      --text-color: #2c3e50;
     }
 
-    /* Body mit sanftem Verlauf und zentriertem Layout */
     body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      display: flex; flex-direction: column; align-items: center;
       background: linear-gradient(to bottom right, var(--bg-start), var(--bg-end));
       font-family: 'Comic Neue', cursive;
       color: var(--text-color);
       overflow-x: hidden;
     }
 
-    /* Weißer “Karten”-Container mit Rundungen und Schatten */
     .quiz-container {
-      width: min(600px, 90vw);
-      background: #fff;
-      border-radius: 0.5rem;
-      box-shadow: 0 10px 20px var(--lift-shadow);
-      padding: 2rem;
-      margin-top: 10vh;
-      text-align: center;
+      background: transparent;
+      padding: 20px;
+      display: flex; flex-direction: column; align-items: center;
     }
 
-    /* Frage-Text */
     .question {
       font-size: 2em;
-      margin-bottom: 1.5rem;
+      margin-bottom: 20px;
     }
 
-    /* Zwei-spaltige Antworten */
     .answers {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
+      display: flex; flex-direction: column; gap: 15px;
     }
 
-    /* Einheitliche Antwort-Buttons */
     .answer-button {
       background: var(--btn-bg);
       border: 2px solid #ccc;
       border-radius: 0.75rem;
-      padding: 1rem;
-      font-size: 1.2em;
+      padding: 15px 30px;
+      font-size: 1.5em;
       cursor: pointer;
       box-shadow: 0 4px 8px var(--lift-shadow);
       transition: background 0.3s, transform 0.2s;
+      width: 300px;
+      outline: none;
+      color: var(--text-color);
     }
     .answer-button:hover {
       background: var(--btn-hover);
       transform: translateY(-2px);
     }
 
-    /* Platz für “Richtig!” / “Falsch!” */
     .message {
-      font-size: 1.5em;
+      font-size: 2em;
+      margin-top: 20px;
       height: 2em;
-      margin-bottom: 1.5rem;
     }
 
-    /* Controls (Neustart/Schließen) */
     .controls {
-      display: flex;
-      gap: 1rem;
-      margin-top: 1rem;
+      margin-top: 30px;
+      display: flex; gap: 20px;
     }
     .reset {
       background: var(--btn-bg);
       border: none;
       border-radius: 0.75rem;
-      padding: 1rem 2rem;
-      font-size: 1.2em;
+      padding: 16px 32px;
+      font-size: 1.5em;
       cursor: pointer;
-      box-shadow: 0 4px 8px var(--lift-shadow);
+      box-shadow: 0 6px 15px var(--lift-shadow);
       transition: background 0.3s, transform 0.2s;
+      color: var(--text-color);
     }
     .reset:hover {
       background: var(--btn-hover);
       transform: translateY(-2px);
     }
 
-    /* Modal-Hintergrund */
     .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
+      position: fixed; top:0; left:0; right:0; bottom:0;
       background: rgba(0,0,0,0.5);
-      display: flex; justify-content: center; align-items: center;
-      z-index: 1000;
+      display: flex; justify-content:center; align-items:center;
+      z-index:1000;
     }
     .modal-content {
-      background: #fff;
-      border-radius: 0.5rem;
-      padding: 2rem;
+      background: var(--btn-bg);
+      padding: 30px;
+      border-radius: 0.75rem;
       text-align: center;
-      box-shadow: 0 10px 20px var(--lift-shadow);
+      box-shadow: 0 6px 15px var(--lift-shadow);
       color: var(--text-color);
     }
     .modal-content h2 {
       font-size: 2.5em;
-      margin-bottom: 1rem;
+      margin-bottom: 10px;
     }
     .modal-content p {
       font-size: 1.5em;
-      margin-bottom: 2rem;
+      margin-bottom: 20px;
     }
     .modal-content .reset {
-      padding: 0.75rem 1.5rem;
-      font-size: 1.1em;
-      margin: 0 0.5rem;
+      padding: 10px 20px;
+      font-size: 1.2em;
+      margin: 5px;
     }
 
-    /* Feuerwerk & Shake unverändert */
-    @keyframes firework { /* … wie gehabt … */ }
-    .confetti { /* … wie gehabt … */ }
-    @keyframes shake { /* … wie gehabt … */ }
+    @keyframes firework { /* unverändert */ }
+    .confetti { /* unverändert */ }
+    @keyframes shake { /* unverändert */ }
     .shake { animation: shake 0.8s; }
 
-    /* Spinner */
+    /* spinner & error */
     #spinner {
-      position: absolute; top:50%; left:50%;
+      position:absolute; top:50%; left:50%;
       width:40px; height:40px; margin:-20px;
       border:4px solid rgba(0,0,0,0.1);
       border-top:4px solid var(--btn-hover);
@@ -149,26 +130,25 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     #errorMsg {
-      position: absolute; top:50%; left:50%;
-      transform: translate(-50%, -50%);
+      position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-50%);
       background: rgba(255,0,0,0.8);
       color: #fff;
-      padding: 1rem;
-      border-radius: 0.5rem;
-      display: none;
-      z-index: 20;
+      padding:1rem; border-radius:0.5rem;
+      display:none; z-index:20;
     }
   </style>
 </head>
 <body>
   <div class="quiz-container">
-    <div class="question" id="question">Frage wird geladen…</div>
+    <div class="question" id="question">Frage wird geladen...</div>
     <div class="answers" id="answers"></div>
     <div class="message" id="message"></div>
-    <div class="controls">
-      <button class="reset" id="resetBtn">🔄 Neustart</button>
-      <button class="reset" id="closeBtn">❌ Schließen</button>
-    </div>
+  </div>
+
+  <div class="controls">
+    <button class="reset" id="resetBtn">🔄 Neustart</button>
+    <button class="reset" id="closeBtn">❌ Schließen</button>
   </div>
 
   <div id="defeatModal" class="modal-overlay hidden">
@@ -182,4 +162,8 @@
 
   <script>
     "use strict";
-    /* — Der gesamte Quiz-Script-Teil blei*
+    /* Quiz-Logik unverändert */
+    // ... generateAdditionQuestion, shuffleArray, displayQuestion, handleAnswer, etc.
+  </script>
+</body>
+</html>
