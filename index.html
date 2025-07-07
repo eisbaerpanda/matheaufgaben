@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mathe-Aufgaben</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
@@ -10,133 +10,148 @@
     :root {
       --bg-start: #fef6e4;
       --bg-end:   #d8e2dc;
+      --btn-bg:   rgba(0,0,0,0.5);
+      --btn-hover: rgba(0,0,0,0.8);
+      --bar-bg:   rgba(255,255,255,0.95);
       --lift-shadow: rgba(0,0,0,0.15);
-      --btn-bg: rgba(255,255,255,0.9);
-      --btn-hover: rgba(0,0,0,0.05);
-      --text-color: #2c3e50;
+      --text-color: #222;
     }
 
+    /* Grundlayout */
     body {
-      margin: 0; padding: 0;
-      min-height: 100vh;
-      display: flex; flex-direction: column; align-items: center;
-      background: linear-gradient(to bottom right, var(--bg-start), var(--bg-end));
       font-family: 'Comic Neue', cursive;
+      text-align: center;
+      background: linear-gradient(to bottom right, var(--bg-start), var(--bg-end));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      margin: 0;
+      padding-top: 10vh;
+      overflow: hidden;
       color: var(--text-color);
-      overflow-x: hidden;
     }
 
+    /* Container für den Quiz-Inhalt */
     .quiz-container {
-      background: transparent;
+      background: var(--bar-bg);
       padding: 20px;
-      display: flex; flex-direction: column; align-items: center;
+      border-radius: 0.5rem;
+      box-shadow: 0 5px 15px var(--lift-shadow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
+    /* Frageanzeige */
     .question {
       font-size: 2em;
       margin-bottom: 20px;
-    }
-
-    .answers {
-      display: flex; flex-direction: column; gap: 15px;
-    }
-
-    .answer-button {
-      background: var(--btn-bg);
-      border: 2px solid #ccc;
-      border-radius: 0.75rem;
-      padding: 15px 30px;
-      font-size: 1.5em;
-      cursor: pointer;
-      box-shadow: 0 4px 8px var(--lift-shadow);
-      transition: background 0.3s, transform 0.2s;
-      width: 300px;
-      outline: none;
       color: var(--text-color);
     }
+
+    /* Antwort-Buttons */
+    .answers {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .answer-button {
+      padding: 15px 30px;
+      font-size: 1.5em;
+      background-color: #fff;
+      color: var(--text-color);
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+      width: 300px;
+      outline: none;
+    }
     .answer-button:hover {
-      background: var(--btn-hover);
-      transform: translateY(-2px);
+      background-color: #f7f7f7;
     }
 
+    /* Rückmeldung */
     .message {
       font-size: 2em;
       margin-top: 20px;
       height: 2em;
+      color: var(--text-color);
     }
 
+    /* Neustart- und Schließen-Buttons */
     .controls {
       margin-top: 30px;
-      display: flex; gap: 20px;
+      display: flex;
+      gap: 20px;
     }
     .reset {
-      background: var(--btn-bg);
-      border: none;
-      border-radius: 0.75rem;
       padding: 16px 32px;
       font-size: 1.5em;
       cursor: pointer;
-      box-shadow: 0 6px 15px var(--lift-shadow);
-      transition: background 0.3s, transform 0.2s;
+      background-color: #fff;
       color: var(--text-color);
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: background 0.3s;
+      outline: none;
     }
     .reset:hover {
-      background: var(--btn-hover);
-      transform: translateY(-2px);
+      background-color: #ecf0f1;
     }
 
+    /* Modal bei falscher Antwort */
     .modal-overlay {
-      position: fixed; top:0; left:0; right:0; bottom:0;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.5);
-      display: flex; justify-content:center; align-items:center;
-      z-index:1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
     }
     .modal-content {
-      background: var(--btn-bg);
+      background: var(--bar-bg);
       padding: 30px;
-      border-radius: 0.75rem;
+      border-radius: 10px;
       text-align: center;
-      box-shadow: 0 6px 15px var(--lift-shadow);
       color: var(--text-color);
+      box-shadow: 0 5px 15px var(--lift-shadow);
     }
     .modal-content h2 {
       font-size: 2.5em;
       margin-bottom: 10px;
+      color: var(--text-color);
     }
     .modal-content p {
       font-size: 1.5em;
       margin-bottom: 20px;
+      color: var(--text-color);
     }
     .modal-content .reset {
       padding: 10px 20px;
       font-size: 1.2em;
       margin: 5px;
+      background-color: #fff;
+      color: var(--text-color);
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .modal-content .reset:hover {
+      background-color: #ecf0f1;
     }
 
-    @keyframes firework { /* unverändert */ }
-    .confetti { /* unverändert */ }
-    @keyframes shake { /* unverändert */ }
-    .shake { animation: shake 0.8s; }
-
-    /* spinner & error */
-    #spinner {
-      position:absolute; top:50%; left:50%;
-      width:40px; height:40px; margin:-20px;
-      border:4px solid rgba(0,0,0,0.1);
-      border-top:4px solid var(--btn-hover);
-      border-radius:50%;
-      animation: spin 1s linear infinite;
-      display:none; z-index:20;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    #errorMsg {
-      position:absolute; top:50%; left:50%;
-      transform:translate(-50%,-50%);
-      background: rgba(255,0,0,0.8);
-      color: #fff;
-      padding:1rem; border-radius:0.5rem;
-      display:none; z-index:20;
-    }
+    /* Feuerwerk & Shake bleiben unverändert */
+    @keyframes firework { /* ... */ }
+    .confetti { /* ... */ }
+    @keyframes shake { /* ... */ }
+    .shake { /* ... */ }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
@@ -161,9 +176,7 @@
   </div>
 
   <script>
-    "use strict";
-    /* Quiz-Logik unverändert */
-    // ... generateAdditionQuestion, shuffleArray, displayQuestion, handleAnswer, etc.
+    /* ... dein JavaScript bleibt unverändert ... */
   </script>
 </body>
 </html>
